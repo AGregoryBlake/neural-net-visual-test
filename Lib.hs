@@ -13,8 +13,7 @@ import Neural
     
 windowWidth = 500
 windowHeight = 500
-neural = [] []
-    
+
 app :: IO ()
 app = appInit
 
@@ -24,10 +23,10 @@ appInit = do
     window <- createWindow "Herbivores and Carnivores" defaultWindow
            { windowInitialSize = V2 windowWidth windowHeight }
     renderer <- createRenderer window (-1) defaultRenderer
-    appLoop renderer neural
+    appLoop renderer
 
-appLoop :: Renderer -> NeuralNetwork -> IO ()
-appLoop renderer neural = do
+appLoop :: Renderer -> IO ()
+appLoop renderer = do
         events <- pollEvents
         let eventIsKeyPress key event =
               case eventPayload event of
@@ -41,4 +40,4 @@ appLoop renderer neural = do
         clear renderer
         present renderer
         threadDelay 16500
-        unless qPressed $ appLoop renderer neural
+        unless qPressed $ appLoop renderer
