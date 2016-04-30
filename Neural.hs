@@ -4,28 +4,22 @@ import Data.Word
 
 type Name = String
 type Value = Double
-type Terminus = Node
 
-data Node = Node Name Value [Vertice]
-data Vertice = Vertice Value Terminus
+data Vertice = Vertice Name Value Name
 
-data NeuralNetwork = NeuralNetwork [Node]
+data NeuralNetwork = NeuralNetwork [Name] [Vertice] [Name] [Vertice] [Name]
 
-createNewNetwork :: Name -> Value -> NeuralNetwork
-createNewNetwork name value = NeuralNetwork [Node name value []]
+makeNeuralNetworkWithHiddenNodes :: Int -> NeuralNetwork
+makeNeuralNetworkWithHiddenNodes num = NeuralNetwork [] [] ["H" ++ show x | x <- [0..num]] [] []
 
-addInput :: NeuralNetwork -> Name -> Value -> NeuralNetwork
-addInput (NeuralNetwork xs@(x:_)) name value = NeuralNetwork (Node name value (getVertices x):xs)
+addInput :: NeuralNetwork -> Name -> NeuralNetwork
+addInput (NeuralNetwork inputs firstVerticeGroup hiddens secondVerticeGroup outputs) input = NeuralNetwork (input:inputs) ((generateStaticVerticesForInput input hiddens) ++ firstVerticeGroup) hiddens secondVerticeGroup outputs
 
-getVertices :: Node -> [Vertice]
-getVertices (Node _ _ vertices) = vertices
+generateStaticVerticesForInput :: Name -> [Name] -> [Vertice]
+generateStaticVerticesForInput origin termini = map (\terminus -> Vertice origin 0.1 terminus) termini
 
-addHidden :: NeuralNetwork -> Name -> NeuralNetwork
-addHidden (NeuralNetwork nodes) hiddenNodeName =
-    let addHiddenToOne (Node inputName inputValue vertices) hiddenNodeName = Node inputName inputValue ((Vertice verticeValue (Node hiddenNodeName hiddenNodeValue [])):vertices)
-        verticeValue = 0.1
-        hiddenNodeValue = 5
-    in NeuralNetwork (map (\node -> addHiddenToOne node hiddenNodeName) nodes)
+addOutput :: NeuralNetwork -> Name -> NeuralNetwork
+addOutput (NeuralNetwork inputs firstVerticeGroup hiddens secondVerticeGroup outputs) output = NeuralNetwork inputs firstVerticeGroup hiddens ((generateStaticVerticesForOutput output hiddens) ++ secondVerticeGroup) (output:outputs)
 
-
--- addOutput :: NeuralNetwork -> Node -> NeuralNetwork
+generateStaticVerticesForOutput :: Name -> [Name] -> [Vertice]
+generateStaticVerticesForOutput terminus origins = map (\origin -> Vertice origin 0.1 terminus) origins
