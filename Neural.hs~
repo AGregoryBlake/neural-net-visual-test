@@ -1,9 +1,0 @@
-module Neural where
-
-import Data.Word8
-       
-type Squash = (Double -> Word8)
-     
-data NeuralNetwork = NeuralNetwork { inputs :: [Double]
-                                   , weights :: [(Double -> Double)]
-                                   }
