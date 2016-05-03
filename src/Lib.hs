@@ -10,19 +10,21 @@ import Foreign.C.Types
 import Control.Monad (unless)
 import Data.Word
 import Control.Concurrent
+import System.Random
 import Neural
 
 
 windowWidth = 500 :: CInt
 windowHeight = 500 :: CInt
 
-neural = f
+constructTheNeuralNetwork :: [Double] -> NeuralNetwork
+constructTheNeuralNetwork values = f
     where a = makeNeuralNetworkWithHiddenNodes 4
-          b = addInput a "X"
-          c = addInput b "Y"
-          d = addOutput c "R"
-          e = addOutput d "G"
-          f = addOutput e "B"
+          b = addInput a "X" (take 4 values)
+          c = addInput b "Y" (take 4 (drop 4 values))
+          d = addOutput c "R" (take 4 (drop 8 values))
+          e = addOutput d "G" (take 4 (drop 12 values))
+          f = addOutput e "B" (take 4 (drop 16 values))
 
 app :: IO ()
 app = appInit
@@ -30,10 +32,11 @@ app = appInit
 appInit :: IO ()
 appInit = do
     initializeAll
-    window <- createWindow "Herbivores and Carnivores" defaultWindow
+    window <- createWindow "Neural Network Test" defaultWindow
            { windowInitialSize = V2 windowWidth windowHeight }
+    g <- getStdGen
     renderer <- createRenderer window (-1) defaultRenderer
-    appLoop neural renderer
+    appLoop (constructTheNeuralNetwork (take 20 $ randomRs (-2.0,2.0) g)) renderer
 
 appLoop :: NeuralNetwork -> Renderer -> IO ()
 appLoop neural renderer = do
@@ -50,7 +53,6 @@ appLoop neural renderer = do
         clear renderer
         drawScene neural renderer
         present renderer
-        threadDelay 16500
         unless qPressed $ appLoop neural renderer
 
 drawScene :: NeuralNetwork -> Renderer -> IO ()
@@ -71,3 +73,4 @@ drawNeuralOutputForPoint point@(P (V2 (CInt x) (CInt y))) (NeuralNetwork inputNa
     b <- return $ getNormalizedOutputValue "B" outputValues
     rendererDrawColor renderer $= V4 r g b 255
     drawPoint renderer point
+
