@@ -36,7 +36,11 @@ appInit = do
            { windowInitialSize = V2 windowWidth windowHeight }
     g <- getStdGen
     renderer <- createRenderer window (-1) defaultRenderer
-    appLoop (constructTheNeuralNetwork (take 20 $ randomRs (-2.0,2.0) g)) renderer
+    let randomVerticeValues = take 20 $ randomRs (-2.0,2.0) g
+        inputs = ["X","Y"]
+        hiddens = ["H" ++ show x | x <- [1..4]]
+        outputs = ["R","G","B"]
+    appLoop (buildNeuralNetworkInOneGo inputs hiddens outputs randomVerticeValues) renderer
 
 appLoop :: NeuralNetwork -> Renderer -> IO ()
 appLoop neural renderer = do

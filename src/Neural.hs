@@ -10,6 +10,27 @@ data Vertice = Vertice Name Value Name
 
 data NeuralNetwork = NeuralNetwork [Name] [Vertice] [Name] [Vertice] [Name]
 
+-- new in v0.2
+buildStaticNeuralNetworkInOneGo :: [Name] -> [Name] -> [Name] -> NeuralNetwork
+buildStaticNeuralNetworkInOneGo inputs hiddens outputs = buildNeuralNetworkInOneGo inputs hiddens outputs []
+
+-- new in v0.2
+buildNeuralNetworkInOneGo :: [Name] -> [Name] -> [Name] -> [Value] -> NeuralNetwork
+buildNeuralNetworkInOneGo inputs hiddens outputs weights
+    | numWeights < numVertices = buildNeuralNetworkInOneGo inputs hiddens outputs padWeights
+    | otherwise = NeuralNetwork inputs firstVerticeGroup hiddens secondVerticeGroup outputs
+    where firstVerticeGroup = map tupleToVertice (addWeights inputHiddenPairs w1)
+          secondVerticeGroup = map tupleToVertice (addWeights hiddenOutputPairs w2)
+          (w1,w2) = splitAt numVerticesInFirstLayer weights
+              where numVerticesInFirstLayer = (length inputs) * (length hiddens)
+          tupleToVertice (o,w,t) = Vertice o w t
+          addWeights nodePairs weights = zipWith (\(o,t) w -> (o,w,t)) nodePairs weights
+          inputHiddenPairs = (,) <$> inputs <*> hiddens
+          hiddenOutputPairs = (,) <$> hiddens <*> outputs
+          numWeights = length weights
+          numVertices = ((length inputs) + (length outputs)) * (length hiddens)
+          padWeights = weights ++ (take (numVertices - numWeights) $ repeat 0.0)
+
 makeNeuralNetworkWithHiddenNodes :: Int -> NeuralNetwork
 makeNeuralNetworkWithHiddenNodes num = NeuralNetwork [] [] ["H" ++ show x | x <- [0..num]] [] []
 
