@@ -17,15 +17,6 @@ import Neural
 windowWidth = 500 :: CInt
 windowHeight = 500 :: CInt
 
-constructTheNeuralNetwork :: [Double] -> NeuralNetwork
-constructTheNeuralNetwork values = f
-    where a = makeNeuralNetworkWithHiddenNodes 4
-          b = addInput a "X" (take 4 values)
-          c = addInput b "Y" (take 4 (drop 4 values))
-          d = addOutput c "R" (take 4 (drop 8 values))
-          e = addOutput d "G" (take 4 (drop 12 values))
-          f = addOutput e "B" (take 4 (drop 16 values))
-
 app :: IO ()
 app = appInit
 
@@ -36,9 +27,9 @@ appInit = do
            { windowInitialSize = V2 windowWidth windowHeight }
     g <- getStdGen
     renderer <- createRenderer window (-1) defaultRenderer
-    let randomVerticeValues = take 20 $ randomRs (-2.0,2.0) g
+    let randomVerticeValues = take 80 $ randomRs (-2.0,2.0) g
         inputs = ["X","Y"]
-        hiddens = ["H" ++ show x | x <- [1..4]]
+        hiddens = ["H" ++ show x | x <- [1..16]]
         outputs = ["R","G","B"]
     appLoop (buildNeuralNetworkInOneGo inputs hiddens outputs randomVerticeValues) renderer
 
@@ -57,7 +48,7 @@ appLoop neural renderer = do
         clear renderer
         drawScene neural renderer
         present renderer
-        unless qPressed $ appLoop neural renderer
+        return () -- unless qPressed $ appLoop neural renderer
 
 drawScene :: NeuralNetwork -> Renderer -> IO ()
 drawScene neural renderer = do
@@ -66,7 +57,7 @@ drawScene neural renderer = do
     mapM_ (\point -> drawNeuralOutputForPoint point neural renderer) allPoints
 
 drawNeuralOutputForPoint :: Point V2 CInt -> NeuralNetwork -> Renderer -> IO ()
-drawNeuralOutputForPoint point@(P (V2 (CInt x) (CInt y))) (NeuralNetwork inputNames firstVerticeGroup hiddenNames secondVerticeGroup outputNames) renderer = do
+drawNeuralOutputForPoint point@(P (V2 (CInt x) (CInt y))) (NeuralNetwork _ firstVerticeGroup hiddenNames secondVerticeGroup outputNames) renderer = do
     let normalizedX = (fromIntegral x) / (fromIntegral windowWidth)
         normalizedY = (fromIntegral y) / (fromIntegral windowHeight)
         inputs = [("X",normalizedX),("Y",normalizedY)]

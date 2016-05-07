@@ -1,6 +1,5 @@
 module Neural where
 
-import Data.Word
 import Data.Maybe
 
 type Name = String
@@ -9,6 +8,14 @@ type Value = Double
 data Vertice = Vertice Name Value Name
 
 data NeuralNetwork = NeuralNetwork [Name] [Vertice] [Name] [Vertice] [Name]
+
+-- new in v0.2
+getInputs :: NeuralNetwork -> [Name]
+getInputs (NeuralNetwork inputs _ _ _ _) = inputs
+
+-- new in v0.2
+getOutputs :: NeuralNetwork -> [Name]
+getOutputs (NeuralNetwork _ _ _ _ outputs) = outputs
 
 -- new in v0.2
 buildStaticNeuralNetworkInOneGo :: [Name] -> [Name] -> [Name] -> NeuralNetwork
@@ -30,35 +37,6 @@ buildNeuralNetworkInOneGo inputs hiddens outputs weights
           numWeights = length weights
           numVertices = ((length inputs) + (length outputs)) * (length hiddens)
           padWeights = weights ++ (take (numVertices - numWeights) $ repeat 0.0)
-
-makeNeuralNetworkWithHiddenNodes :: Int -> NeuralNetwork
-makeNeuralNetworkWithHiddenNodes num = NeuralNetwork [] [] ["H" ++ show x | x <- [0..num]] [] []
-
-addStaticInput :: NeuralNetwork -> Name -> NeuralNetwork
-addStaticInput (NeuralNetwork inputs firstVerticeGroup hiddens secondVerticeGroup outputs) input = NeuralNetwork (input:inputs) ((generateStaticVerticesForInput input hiddens) ++ firstVerticeGroup) hiddens secondVerticeGroup outputs
-
-addInput :: NeuralNetwork -> Name -> [Value] -> NeuralNetwork
-addInput (NeuralNetwork inputs firstVerticeGroup hiddens secondVerticeGroup outputs) input values = NeuralNetwork (input:inputs) ((generateVerticesForInput input hiddens values) ++ firstVerticeGroup) hiddens secondVerticeGroup outputs
-
-generateStaticVerticesForInput :: Name -> [Name] -> [Vertice]
-generateStaticVerticesForInput origin termini = map (\terminus -> Vertice origin 2 terminus) termini
-
-generateVerticesForInput :: Name -> [Name] -> [Double] -> [Vertice]
-generateVerticesForInput origin termini terminiValues = map (\(t,tV) -> Vertice origin tV t) terminiValuePair
-    where terminiValuePair = zip termini terminiValues
-
-addStaticOutput :: NeuralNetwork -> Name -> NeuralNetwork
-addStaticOutput (NeuralNetwork inputs firstVerticeGroup hiddens secondVerticeGroup outputs) output = NeuralNetwork inputs firstVerticeGroup hiddens ((generateStaticVerticesForOutput output hiddens) ++ secondVerticeGroup) (output:outputs)
-
-addOutput :: NeuralNetwork -> Name -> [Value] -> NeuralNetwork
-addOutput (NeuralNetwork inputs firstVerticeGroup hiddens secondVerticeGroup outputs) output values = NeuralNetwork inputs firstVerticeGroup hiddens ((generateVerticesForOutput output hiddens values) ++ secondVerticeGroup) (output:outputs)
-
-generateStaticVerticesForOutput :: Name -> [Name] -> [Vertice]
-generateStaticVerticesForOutput terminus origins = map (\origin -> Vertice origin 2 terminus) origins
-
-generateVerticesForOutput :: Name -> [Name] -> [Double] -> [Vertice]
-generateVerticesForOutput terminus origins originValues = map (\(o,oV) -> Vertice o oV terminus) originValuePair
-    where originValuePair = zip origins originValues
 
 calculateOutputValues :: [Name] -> [(Name,Value)] -> [Vertice] -> [Name] -> [Vertice] -> [(Name,Value)]
 calculateOutputValues nodeNames inputs firstVerticeGroup hiddenNames secondVerticeGroup = map (\nodeName -> calculateOutputValue nodeName inputs firstVerticeGroup hiddenNames secondVerticeGroup) nodeNames
