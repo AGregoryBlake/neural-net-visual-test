@@ -1,7 +1,5 @@
 {-# LANGUAGE OverloadedStrings #-}
-module Lib
-    ( app
-    ) where
+module Lib (app) where
 
 import SDL
 import Linear
@@ -27,8 +25,8 @@ appInit = do
            { windowInitialSize = V2 windowWidth windowHeight }
     g <- getStdGen
     renderer <- createRenderer window (-1) defaultRenderer
-    let randomVerticeValues = take 80 $ randomRs (-2.0,2.0) g
-    appLoop (buildNeuralNetwork 2 16 3 randomVerticeValues) renderer
+    let randomVerticeValues = take 320 $ randomRs (-8.0,8.0) g
+    appLoop (buildNeuralNetwork 2 64 3 randomVerticeValues) renderer
 
 appLoop :: NeuralNetwork -> Renderer -> IO ()
 appLoop neural renderer = do
@@ -64,7 +62,7 @@ drawNeuralOutputForPoint point@(P (V2 (CInt x) (CInt y))) neural renderer = do
         where inputs = [normalizedX, normalizedY]
               normalizedX = normalizedDim x windowWidth
               normalizedY = normalizedDim y windowHeight
-              normalizedDim a b = (fromIntegral a) / (fromIntegral b)
+              normalizedDim a b = (((fromIntegral a) - (0.5 * (fromIntegral b))) / (fromIntegral b))
               normalizeOutput a = floor (a * 256)
               getOutputValue n outputValues = return $ normalizeOutput $ outputValues !! n
 
