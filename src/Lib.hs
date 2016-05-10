@@ -28,10 +28,7 @@ appInit = do
     g <- getStdGen
     renderer <- createRenderer window (-1) defaultRenderer
     let randomVerticeValues = take 80 $ randomRs (-2.0,2.0) g
-        inputs = ["X","Y"]
-        hiddens = ["H" ++ show x | x <- [1..16]]
-        outputs = ["R","G","B"]
-    appLoop (buildNeuralNetworkInOneGo inputs hiddens outputs randomVerticeValues) renderer
+    appLoop (buildNeuralNetwork 2 16 3 randomVerticeValues) renderer
 
 appLoop :: NeuralNetwork -> Renderer -> IO ()
 appLoop neural renderer = do
@@ -48,7 +45,7 @@ appLoop neural renderer = do
         clear renderer
         drawScene neural renderer
         present renderer
-        return () -- unless qPressed $ appLoop neural renderer
+        unless qPressed $ appLoop neural renderer
 
 drawScene :: NeuralNetwork -> Renderer -> IO ()
 drawScene neural renderer = do
@@ -57,15 +54,17 @@ drawScene neural renderer = do
     mapM_ (\point -> drawNeuralOutputForPoint point neural renderer) allPoints
 
 drawNeuralOutputForPoint :: Point V2 CInt -> NeuralNetwork -> Renderer -> IO ()
-drawNeuralOutputForPoint point@(P (V2 (CInt x) (CInt y))) (NeuralNetwork _ firstVerticeGroup hiddenNames secondVerticeGroup outputNames) renderer = do
-    let normalizedX = (fromIntegral x) / (fromIntegral windowWidth)
-        normalizedY = (fromIntegral y) / (fromIntegral windowHeight)
-        inputs = [("X",normalizedX),("Y",normalizedY)]
-        getNormalizedOutputValue name outputValues = floor ((getSpecificOutputValue name outputValues) * 256)
-    outputValues <- return (calculateOutputValues outputNames inputs firstVerticeGroup hiddenNames secondVerticeGroup)
-    r <- return $ getNormalizedOutputValue "R" outputValues
-    g <- return $ getNormalizedOutputValue "G" outputValues
-    b <- return $ getNormalizedOutputValue "B" outputValues
+drawNeuralOutputForPoint point@(P (V2 (CInt x) (CInt y))) neural renderer = do
+    outputValues <- return (calculateOutputValues inputs neural)
+    r <- getOutputValue 1 outputValues
+    g <- getOutputValue 2 outputValues
+    b <- getOutputValue 3 outputValues
     rendererDrawColor renderer $= V4 r g b 255
     drawPoint renderer point
+        where inputs = [normalizedX, normalizedY]
+              normalizedX = normalizedDim x windowWidth
+              normalizedY = normalizedDim y windowHeight
+              normalizedDim a b = (fromIntegral a) / (fromIntegral b)
+              normalizeOutput a = floor (a * 256)
+              getOutputValue n outputValues = return $ normalizeOutput $ outputValues !! n
 
