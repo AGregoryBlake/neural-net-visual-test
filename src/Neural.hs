@@ -25,7 +25,7 @@ buildNeuralNetwork nodeLayerSizes weights
 
 buildRandomNeuralNetwork :: [Int] -> IO NeuralNetwork
 buildRandomNeuralNetwork nodeLayerSizes = do
-    g <- getStdGen
+    g <- newStdGen
     let randomVerticeValues = take numVertices $ randomRs (-8.0,8.0) g
             where numVertices = sum $ zipWith (*) nodeLayerSizes (drop 1 nodeLayerSizes)
     return $ buildNeuralNetwork nodeLayerSizes randomVerticeValues
