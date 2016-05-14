@@ -1,0 +1,26 @@
+	Sat May 14 16:01 2016 Time and Allocation Profiling Report  (Final)
+
+	   neural-net-visual-test-exe +RTS -N -hy -p -RTS
+
+	total time  =        0.75 secs   (754 ticks @ 1000 us, 1 processor)
+	total alloc = 917,222,640 bytes  (excludes profiling overheads)
+
+COST CENTRE MODULE  %time %alloc
+
+MAIN        MAIN    100.0  100.0
+
+
+                                                                individual     inherited
+COST CENTRE       MODULE                      no.     entries  %time %alloc   %time %alloc
+
+MAIN              MAIN                        234           0  100.0  100.0   100.0  100.0
+ CAF              Lib                         466           0    0.0    0.0     0.0    0.0
+  unstream/resize Data.Text.Internal.Fusion   468           2    0.0    0.0     0.0    0.0
+ CAF              SDL.Init                    462           0    0.0    0.0     0.0    0.0
+ CAF              System.Random               446           0    0.0    0.0     0.0    0.0
+ CAF              GHC.IO.Encoding             294           0    0.0    0.0     0.0    0.0
+ CAF              GHC.Event.Thread            285           0    0.0    0.0     0.0    0.0
+ CAF              GHC.IO.Encoding.Iconv       274           0    0.0    0.0     0.0    0.0
+ CAF              GHC.Conc.Signal             264           0    0.0    0.0     0.0    0.0
+ CAF              GHC.IO.Handle.FD            258           0    0.0    0.0     0.0    0.0
+ CAF              GHC.Integer.Type            241           0    0.0    0.0     0.0    0.0

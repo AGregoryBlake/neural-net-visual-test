@@ -1,33 +1,29 @@
 module Neural (NeuralNetwork, buildNeuralNetwork, calculateOutputValues) where
 
 import Data.List
+import Data.List.Split
 
 type Value = Double
 
-data NeuralNetwork = NeuralNetwork Int [[Value]] Int [[Value]] Int -- Weight values are sorted by terminus, then by origin.
+data NeuralNetwork = NeuralNetwork [[[Value]]] deriving Show -- weight values grouped by vertice group, terminus, origin.
 
-buildStaticNeuralNetwork :: Int -> Int -> Int -> NeuralNetwork
-buildStaticNeuralNetwork numInputs numHiddens numOutputs = buildNeuralNetwork numInputs numHiddens numOutputs []
+buildStaticNeuralNetwork :: [Int] -> NeuralNetwork
+buildStaticNeuralNetwork nodeLayerSizes = buildNeuralNetwork nodeLayerSizes []
 
-buildNeuralNetwork :: Int -> Int -> Int -> [Value] -> NeuralNetwork
-buildNeuralNetwork numInputs numHiddens numOutputs weights
-    | numWeights < numVertices = buildNeuralNetwork numInputs numHiddens numOutputs padWeights
-    | otherwise = NeuralNetwork numInputs firstVerticeGroup numHiddens secondVerticeGroup numOutputs
-    where firstVerticeGroup = chunk numHiddens vtg1
-          secondVerticeGroup = chunk numOutputs vtg2
-          chunk n = takeWhile (not.null) . unfoldr (Just . splitAt n)
-          (vtg1,vtg2) = splitAt numVerticesInFirstLayer weights
-              where numVerticesInFirstLayer = numInputs * numHiddens
+buildNeuralNetwork :: [Int] -> [Value] -> NeuralNetwork
+buildNeuralNetwork nodeLayerSizes weights
+    | numWeights < numVertices = buildNeuralNetwork nodeLayerSizes padWeights
+    | otherwise = NeuralNetwork verticeGroups
+    where verticeGroups = map (\(vtg,numTermini) -> chunksOf numTermini vtg) (zip groupWeightsByVerticeGroup terminusLayerSizes)
+          groupWeightsByVerticeGroup = splitPlaces numVerticesByLayer weights
           numWeights = length weights
-          numVertices = (numInputs + numOutputs) * numHiddens
+          numVertices = sum numVerticesByLayer
+          numVerticesByLayer = zipWith (*) nodeLayerSizes terminusLayerSizes
+          terminusLayerSizes = drop 1 nodeLayerSizes
           padWeights = weights ++ (take (numVertices - numWeights) $ repeat 0.0)
 
 calculateOutputValues :: [Value] -> NeuralNetwork -> [Value]
-calculateOutputValues inputValues (NeuralNetwork numInputs firstVerticeGroup numHiddens secondVerticeGroup numOutputs) = calculateOutputValuesInternal inputValues firstVerticeGroup secondVerticeGroup
-
-calculateOutputValuesInternal :: [Value] -> [[Value]] -> [[Value]] -> [Value]
-calculateOutputValuesInternal inputValues firstVerticeGroup secondVerticeGroup = calculateLayerValues hiddenValues secondVerticeGroup
-    where hiddenValues = calculateLayerValues inputValues firstVerticeGroup
+calculateOutputValues inputValues (NeuralNetwork verticeGroups) = foldl' calculateLayerValues inputValues verticeGroups
 
 calculateLayerValues :: [Value] -> [[Value]] -> [Value]
 calculateLayerValues previousLayer verticeGroup = map (calculateNode previousLayer) verticeGroup
