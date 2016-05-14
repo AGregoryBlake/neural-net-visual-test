@@ -1,7 +1,8 @@
-module Neural (NeuralNetwork, buildNeuralNetwork, calculateOutputValues) where
+module Neural (NeuralNetwork, buildNeuralNetwork, buildRandomNeuralNetwork, calculateOutputValues) where
 
 import Data.List
 import Data.List.Split
+import System.Random
 
 type Value = Double
 
@@ -21,6 +22,13 @@ buildNeuralNetwork nodeLayerSizes weights
           numVerticesByLayer = zipWith (*) nodeLayerSizes terminusLayerSizes
           terminusLayerSizes = drop 1 nodeLayerSizes
           padWeights = weights ++ (take (numVertices - numWeights) $ repeat 0.0)
+
+buildRandomNeuralNetwork :: [Int] -> IO NeuralNetwork
+buildRandomNeuralNetwork nodeLayerSizes = do
+    g <- getStdGen
+    let randomVerticeValues = take numVertices $ randomRs (-8.0,8.0) g
+            where numVertices = sum $ zipWith (*) nodeLayerSizes (drop 1 nodeLayerSizes)
+    return $ buildNeuralNetwork nodeLayerSizes randomVerticeValues
 
 calculateOutputValues :: [Value] -> NeuralNetwork -> [Value]
 calculateOutputValues inputValues (NeuralNetwork verticeGroups) = foldl' calculateLayerValues inputValues verticeGroups
