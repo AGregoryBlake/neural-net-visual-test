@@ -1,7 +1,8 @@
-module Neural (NeuralNetwork, buildNeuralNetwork, buildRandomNeuralNetwork, calculateOutputValues, mutate) where
+module Neural (NeuralNetwork, buildNeuralNetwork, buildRandomNeuralNetwork, calculateHighestOutputIndex, calculateOutputValues, mutate) where
 
 import Data.List
 import Data.List.Split
+import Data.Ord
 import System.Random
 
 type Value = Double
@@ -27,10 +28,15 @@ buildNeuralNetwork mutationRate nodeLayerSizes weights
 buildRandomNeuralNetwork :: (Value,Value) -> [Int] -> IO NeuralNetwork
 buildRandomNeuralNetwork verticeRange nodeLayerSizes = do
     g <- newStdGen
-    let (mutationRate,g') = randomR (0.0,1.0) g
+    let (mutationRate,g') = randomR (1.0,1.0) g
         randomVerticeValues = take numVertices $ randomRs verticeRange g'
             where numVertices = sum $ zipWith (*) nodeLayerSizes (drop 1 nodeLayerSizes)
     return $ buildNeuralNetwork mutationRate nodeLayerSizes randomVerticeValues
+
+calculateHighestOutputIndex :: [Value] -> NeuralNetwork -> Int
+calculateHighestOutputIndex inputValues neural = maxIndex $ calculateOutputValues inputValues neural
+    where maxIndex xs = snd $ maxOutputAndIndex xs
+          maxOutputAndIndex xs = maximumBy (comparing fst) (zip xs [0..])
 
 calculateOutputValues :: [Value] -> NeuralNetwork -> [Value]
 calculateOutputValues inputValues (NeuralNetwork _ _ verticeGroups) = foldl' calculateLayerValues inputValues verticeGroups
