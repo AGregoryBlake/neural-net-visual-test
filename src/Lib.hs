@@ -12,8 +12,10 @@ import System.Random
 import Neural
 
 
-windowWidth = 500 :: CInt
-windowHeight = 500 :: CInt
+windowWidth = 250 :: CInt
+windowHeight = 250 :: CInt
+
+verticeRange = (-8.0,8.0)
 
 app :: IO ()
 app = appInit
@@ -23,9 +25,8 @@ appInit = do
     initializeAll
     window <- createWindow "Neural Network Test" defaultWindow
            { windowInitialSize = V2 windowWidth windowHeight }
-    g <- getStdGen
     renderer <- createRenderer window (-1) defaultRenderer
-    neural <- buildRandomNeuralNetwork [2, 32, 16, 8, 4, 3]
+    neural <- buildRandomNeuralNetwork verticeRange [2, 32, 16, 8, 3]
     appLoop neural renderer
 
 appLoop :: NeuralNetwork -> Renderer -> IO ()
@@ -43,7 +44,8 @@ appLoop neural renderer = do
         clear renderer
         drawScene neural renderer
         present renderer
-        unless qPressed $ appLoop neural renderer
+        neural' <- mutate verticeRange neural
+        unless qPressed $ appLoop neural' renderer
 
 drawScene :: NeuralNetwork -> Renderer -> IO ()
 drawScene neural renderer = do
