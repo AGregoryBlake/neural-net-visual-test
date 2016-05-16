@@ -54,9 +54,9 @@ drawScene neural renderer = do
 drawNeuralOutputForPoint :: Point V2 CInt -> NeuralNetwork -> Renderer -> IO ()
 drawNeuralOutputForPoint point@(P (V2 (CInt x) (CInt y))) neural renderer = do
     outputValues <- return (calculateOutputValues inputs neural)
-    r <- getOutputValue 1 outputValues
-    g <- getOutputValue 2 outputValues
-    b <- getOutputValue 3 outputValues
+    r <- getOutputValue 0 outputValues
+    g <- getOutputValue 1 outputValues
+    b <- getOutputValue 2 outputValues
     rendererDrawColor renderer $= V4 r g b 255
     drawPoint renderer point
         where inputs = [normalizedX, normalizedY]

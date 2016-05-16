@@ -15,12 +15,13 @@ buildNeuralNetwork :: [Int] -> [Value] -> NeuralNetwork
 buildNeuralNetwork nodeLayerSizes weights
     | numWeights < numVertices = buildNeuralNetwork nodeLayerSizes padWeights
     | otherwise = NeuralNetwork verticeGroups
-    where verticeGroups = map (\(vtg,numTermini) -> chunksOf numTermini vtg) (zip groupWeightsByVerticeGroup terminusLayerSizes)
+    where verticeGroups = map (\(vtg,numOrigins) -> chunksOf numOrigins vtg) (zip groupWeightsByVerticeGroup originLayerSizes)
           groupWeightsByVerticeGroup = splitPlaces numVerticesByLayer weights
           numWeights = length weights
           numVertices = sum numVerticesByLayer
           numVerticesByLayer = zipWith (*) nodeLayerSizes terminusLayerSizes
           terminusLayerSizes = drop 1 nodeLayerSizes
+          originLayerSizes = init nodeLayerSizes
           padWeights = weights ++ (take (numVertices - numWeights) $ repeat 0.0)
 
 buildRandomNeuralNetwork :: [Int] -> IO NeuralNetwork
